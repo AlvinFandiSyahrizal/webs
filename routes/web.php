@@ -45,6 +45,11 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::resource('users', UserController::class);
 
 
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+
+
 // Route::post('/logout', function () {
 //     Auth::logout();
 //     return redirect()->route('login');

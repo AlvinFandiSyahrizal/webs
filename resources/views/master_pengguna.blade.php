@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Pengguna</title>
     <style>
+        /* Styles seperti sebelumnya */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -39,6 +40,7 @@
             color: #fff;
             border-radius: 5px;
             font-size: 14px;
+            cursor: pointer;
         }
 
         table {
@@ -65,6 +67,7 @@
             background-color: #f4f4f4;
             padding: 20px;
             border-radius: 10px;
+            display: none; /* Sembunyikan form awalnya */
         }
 
         .form-container label {
@@ -139,6 +142,7 @@
 <body>
     <h1>Master Pengguna</h1>
     <div class="container">
+        <!-- Flash message section -->
         @if (session('success'))
         <div class="flash-message">
             {{ session('success') }}
@@ -155,9 +159,12 @@
         </div>
         @endif
 
+        <!-- Tombol tambah pengguna -->
         <div class="button">
-            <a href="#form-tambah">Tambah Pengguna</a>
+            <a id="add-user-btn" href="#">Tambah Pengguna</a>
         </div>
+
+        <!-- Table -->
         <table>
             <thead>
                 <tr>
@@ -186,6 +193,7 @@
             </tbody>
         </table>
 
+        <!-- Form tambah pengguna -->
         <div id="form-tambah" class="form-container">
             <form action="{{ route('users.store') }}" method="POST">
                 @csrf
@@ -205,5 +213,18 @@
             </form>
         </div>
     </div>
+
+    <script>
+        // Tangkap elemen tombol dan form
+        const addUserBtn = document.getElementById('add-user-btn');
+        const formTambah = document.getElementById('form-tambah');
+
+        // Tambahkan event listener untuk tombol
+        addUserBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Mencegah refresh halaman
+            formTambah.style.display = 'block'; // Tampilkan form
+            addUserBtn.style.display = 'none'; // Sembunyikan tombol
+        });
+    </script>
 </body>
 </html>
