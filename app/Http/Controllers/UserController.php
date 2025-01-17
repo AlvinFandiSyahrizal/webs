@@ -19,7 +19,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:logins,email',
+            'email' => 'required|email|unique:users,email',  // Pastikan menggunakan tabel 'users'
             'password' => 'required|min:6|confirmed',
         ]);
 
@@ -29,8 +29,9 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return redirect()->route('users.index')->with('success', 'Pengguna berhasil ditambahkan.');
+        return redirect()->route('dashboard')->with('success', 'Pengguna berhasil ditambahkan.');
     }
+
 
     public function edit($id)
     {
@@ -44,20 +45,29 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => "required|email|unique:logins,email,$id",
+            'email' => "required|email|unique:users,email,$id",
+            'password' => 'nullable|min:6|confirmed',  
         ]);
 
+        // Update nama dan email
         $user->update($request->only('name', 'email'));
 
-        return redirect()->route('users.index')->with('success', 'Pengguna berhasil diperbarui.');
+        // Jika password diubah, maka update password juga
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+            $user->save();
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Pengguna berhasil diperbarui.');
     }
+
 
     public function destroy($id)
     {
         $user = User::findOrFail($id);
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'Pengguna berhasil dihapus.');
+        return redirect()->route('dashboard')->with('success', 'Pengguna berhasil dihapus.');
     }
 
 

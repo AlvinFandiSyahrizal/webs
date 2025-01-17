@@ -23,10 +23,6 @@ Route::get('/', function () {
 
 
 
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'processLogin'])->name('login.process');
-Route::get('/dashboard', [LoginController::class, 'showDashboard'])->name('dashboard');
-
 use App\Http\Controllers\UserController;
 
 
@@ -45,8 +41,17 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::resource('users', UserController::class);
 
 
-
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+
+use App\Http\Controllers\SettingsController;
+
+Route::get('settings', [SettingsController::class, 'showSettings'])->name('settings.show');
+Route::post('settings', [SettingsController::class, 'updateSettings'])->name('settings.update');
+
+Route::post('/settings/update', [SettingsController::class, 'updateSettings'])->name('settings.update');
+
 
 
 

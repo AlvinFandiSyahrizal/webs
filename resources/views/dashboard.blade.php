@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <style>
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -30,30 +34,30 @@
         }
 
         .cards {
-    display: flex;
-    gap: 20px;
-    margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
         }
 
         .card {
-    flex: 1;
-    background-color: #007BFF; /* Warna biru */
-    color: white;
-    text-align: center;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
+            flex: 1;
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .card h2 {
-    font-size: 36px;
-    margin: 0;
+            font-size: 36px;
+            margin: 0;
         }
 
         .card p {
-    font-size: 16px;
-    margin: 10px 0 0;
+            font-size: 16px;
+            margin: 10px 0 0;
         }
 
         .sidebar ul {
@@ -183,13 +187,15 @@
 
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" style="max-width: 100%; height: auto;">
+                <img src="{{ auth()->user()->dashboard_logo ? asset('storage/' . auth()->user()->dashboard_logo) : asset('path/to/default/dashboard-logo.png') }}" alt="Logo Dashboard">
             </div>
+
 
             <ul class="menu">
                 <li><a href="#" id="dashboardBtn" class="active">DASHBOARD</a></li>
@@ -197,6 +203,14 @@
                 <li><a href="{{ route('logout') }}">LOGOUT</a></li>
             </ul>
         </div>
+
+        <!-- Button for Settings in Dashboard -->
+            <div style="position: absolute; top: 20px; right: 20px;">
+                    <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                        <i class="bi bi-gear"></i> Pengaturan
+                    </button>
+            </div>
+
 
         <div class="content">
             <!-- Dashboard Content -->
@@ -214,16 +228,36 @@
                 </div>
             </div>
 
-            <!-- Master Pengguna Content -->
             <div id="masterPenggunaContent" style="display: none;">
                 <h1>Master Pengguna</h1>
 
-                <!-- Tombol tambah pengguna -->
                 <div class="button">
                     <a id="toggleFormBtn" href="#">Tambah Pengguna</a>
                 </div>
 
-                <!-- Table -->
+                <div id="formSection" style="display: none;">
+                    <div class="form-container">
+                        <h3>Form Tambah Pengguna</h3>
+                        <form action="{{ route('users.store') }}" method="POST">
+                            @csrf
+                            <label for="name">Nama Lengkap</label>
+                            <input type="text" name="name" id="name" required>
+
+                            <label for="email">Email</label>
+                            <input type="email" name="email" id="email" required>
+
+                            <label for="password">Password</label>
+                            <input type="password" name="password" id="password" required>
+
+                            <label for="password_confirmation">Konfirmasi Password</label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" required>
+
+                            <button type="submit">Submit</button>
+                            <button type="button" id="cancelFormBtn">Kembali</button>
+                        </form>
+                    </div>
+                </div>
+
                 <div id="tableSection">
                     <table>
                         <thead>
@@ -241,11 +275,19 @@
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td class="actions">
-                                    <a href="{{ route('users.edit', $user->id) }}" class="edit">Edit</a>
+                                    <a href="#"
+                                       class="edit btn btn-primary btn-sm"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#editModal"
+                                       data-id="{{ $user->id }}"
+                                       data-name="{{ $user->name }}"
+                                       data-email="{{ $user->email }}">
+                                       Edit
+                                    </a>
                                     <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="delete">Hapus</button>
+                                        <button type="submit" class="delete btn btn-danger btn-sm">Hapus</button>
                                     </form>
                                 </td>
                             </tr>
@@ -253,68 +295,125 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Form tambah pengguna -->
-                <div id="formSection" class="form-container" style="display: none;">
-                    <form action="{{ route('users.store') }}" method="POST">
+    <!-- Modal Edit Pengguna -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Pengguna</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm" method="POST" action="">
                         @csrf
-                        <label for="name">Nama Lengkap</label>
-                        <input type="text" name="name" id="name" required>
-
-                        <label for="email">Email</label>
-                        <input type="email" name="email" id="email" required>
-
-                        <label for="password">Password</label>
-                        <input type="password" name="password" id="password" required>
-
-                        <label for="password_confirmation">Konfirmasi Password</label>
-                        <input type="password" name="password_confirmation" id="password_confirmation" required>
-
-                        <button type="submit">Submit</button>
-                        <button type="button" id="cancelFormBtn">Kembali</button>
+                        @method('PUT')
+                        <input type="hidden" name="id" id="editId">
+                        <div class="mb-3">
+                            <label for="editName" class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="editName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="editPassword" name="password">
+                        </div>
+                        <div>
+                            <label for="editPassword_confirmation" class="form-label">Konfirmasi Password</label>
+                            <input type="password" class="form-control" id="editPassword_confirmation" name="password_confirmation">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Modal for Settings -->
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">Pengaturan Website</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="mb-3">
+                        <label for="background_image" class="form-label">Gambar Latar Belakang</label>
+                        <input type="file" class="form-control" name="background_image" id="background_image">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="logo" class="form-label">Logo</label>
+                        <input type="file" class="form-control" name="logo" id="logo">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="menu_order" class="form-label">Susunan Menu Navigasi</label>
+                        <input type="text" class="form-control" name="menu_order" id="menu_order" placeholder="Misal: Home, Dashboard, Logout">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <script>
-        const dashboardBtn = document.getElementById('dashboardBtn');
-        const masterPenggunaBtn = document.getElementById('masterPenggunaBtn');
-        const dashboardContent = document.getElementById('dashboardContent');
-        const masterPenggunaContent = document.getElementById('masterPenggunaContent');
 
-        const toggleFormBtn = document.getElementById('toggleFormBtn');
-        const tableSection = document.getElementById('tableSection');
-        const formSection = document.getElementById('formSection');
-        const cancelFormBtn = document.getElementById('cancelFormBtn');
-
-        dashboardBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            dashboardContent.style.display = 'block';
-            masterPenggunaContent.style.display = 'none';
-            dashboardBtn.classList.add('active');
-            masterPenggunaBtn.classList.remove('active');
+        document.getElementById('dashboardBtn').addEventListener('click', function() {
+            document.getElementById('dashboardContent').style.display = 'block';
+            document.getElementById('masterPenggunaContent').style.display = 'none';
+            this.classList.add('active');
+            document.getElementById('masterPenggunaBtn').classList.remove('active');
         });
 
-        masterPenggunaBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            masterPenggunaContent.style.display = 'block';
-            dashboardContent.style.display = 'none';
-            masterPenggunaBtn.classList.add('active');
-            dashboardBtn.classList.remove('active');
+        document.getElementById('masterPenggunaBtn').addEventListener('click', function() {
+            document.getElementById('dashboardContent').style.display = 'none';
+            document.getElementById('masterPenggunaContent').style.display = 'block';
+            this.classList.add('active');
+            document.getElementById('dashboardBtn').classList.remove('active');
         });
 
-        toggleFormBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isTableVisible = tableSection.style.display !== 'none';
-            tableSection.style.display = isTableVisible ? 'none' : 'block';
-            formSection.style.display = isTableVisible ? 'block' : 'none';
+        document.getElementById('toggleFormBtn').addEventListener('click', function() {
+            const formSection = document.getElementById('formSection');
+            const tableSection = document.getElementById('tableSection');
+
+            if (formSection.style.display === 'none') {
+                formSection.style.display = 'block';
+                tableSection.style.display = 'none';
+                this.textContent = 'Kembali ke Tabel Pengguna';
+            } else {
+                formSection.style.display = 'none';
+                tableSection.style.display = 'block';
+                this.textContent = 'Tambah Pengguna';
+            }
         });
 
-        cancelFormBtn.addEventListener('click', () => {
-            tableSection.style.display = 'block';
-            formSection.style.display = 'none';
+        const editButtons = document.querySelectorAll('.edit');
+        editButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const userId = this.getAttribute('data-id');
+                const userName = this.getAttribute('data-name');
+                const userEmail = this.getAttribute('data-email');
+                const form = document.getElementById('editForm');
+                form.action = '/users/' + userId;
+                document.getElementById('editId').value = userId;
+                document.getElementById('editName').value = userName;
+                document.getElementById('editEmail').value = userEmail;
+            });
         });
     </script>
 </body>

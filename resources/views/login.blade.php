@@ -67,11 +67,24 @@
       color: red;
       font-size: 14px;
     }
+    .logo {
+      margin-bottom: 20px;
+    }
+    .logo img {
+      width: 150px; /* Sesuaikan ukuran logo */
+      height: auto;
+    }
   </style>
 </head>
 <body>
 
   <div class="login-container">
+    <!-- Logo Section -->
+    <div class="logo">
+        <img src="{{ auth()->user()->login_logo ? asset('storage/' . auth()->user()->login_logo) : asset('path/to/default/login-logo.png') }}" alt="Logo Login">
+    </div>
+
+
     <h1>Login</h1>
 
     @if ($errors->has('login_error'))
